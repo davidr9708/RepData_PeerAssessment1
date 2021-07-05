@@ -99,21 +99,14 @@ The interval with the **maximum** mean number of steps is: **2355**
 
 ## Imputing missing values
 
-There are **2304** rows with missing values. I decided to fill the missing values with the median of that day, because the next section of this report is counting *"dates"* and not *"5-minutes intervals"* as a variable.
+There are **2304** rows with missing values. I decided to fill the missing values with the median of that interval. 
 
 ```r
 Day_step_No_NA <-  
   Walking %>%     
       group_by(interval) %>% 
           mutate(steps = ifelse(is.na(steps), median(steps, na.rm = TRUE),                     steps)) 
-sum(is.na(Day_step_No_NA))
-```
 
-```
-## [1] 0
-```
-
-```r
 Day_step_No_NA
 ```
 
@@ -134,4 +127,64 @@ Day_step_No_NA
 ## 10     0 2012-10-01       45
 ## # ... with 17,558 more rows
 ```
+
+
+```r
+Day_step_No_NA %>%
+  group_by(date) %>% 
+      summarise(Total = sum(steps)) %>%
+          ggplot(aes(x = Total)) + 
+              geom_histogram(color = 'black', binwidth = 2000) +
+              xlab('Mean number of steps')
+```
+
+![](PA1_template_files/figure-html/Plot3-1.png)<!-- -->
+
+```
+## Warning: Unknown or uninitialised column: `steps`.
+```
+
+```
+## Warning in mean.default(Day_step$steps, na.rm = TRUE): argument is not numeric
+## or logical: returning NA
+```
+
+```
+## Warning: Unknown or uninitialised column: `steps`.
+```
+  * The new **mean** number of steps is: **32.9995446**
+  * The new **median** number of steps is: **0**
+
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+```r
+Day_step_Week <-
+  Day_step_No_NA %>%
+    mutate(Weekday = ifelse(
+      (weekdays(as.Date(date)) == "Saturday")|(weekdays(as.Date(date)) == "Sunday"), 'Weekend', 'Weekday'))
+
+head(Day_step_Week, 3)
+```
+
+```
+## # A tibble: 3 x 4
+## # Groups:   interval [3]
+##   steps date       interval Weekday
+##   <int> <chr>         <int> <chr>  
+## 1     0 2012-10-01        0 Weekday
+## 2     0 2012-10-01        5 Weekday
+## 3     0 2012-10-01       10 Weekday
+```
+
+```r
+Day_step_Week %>%
+  group_by(interval, Weekday) %>%
+    summarize(Mean = mean(steps)) %>%
+        ggplot() +
+            geom_line(aes(x =interval, y = Mean, color = Weekday)) +
+            ylab('Mean number of steps') + xlab('Interval')
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->

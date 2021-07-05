@@ -60,6 +60,7 @@ ggplot(data = Interval_step) +
 ```
 ```{r echo=FALSE}
 interval.max <- max(Interval_step$interval)
+
 ```
 The interval with the **maximum** mean number of steps is: **`r interval.max`** 
 
@@ -70,7 +71,7 @@ The interval with the **maximum** mean number of steps is: **`r interval.max`**
 Missing <- sum(is.na(Walking$steps)) 
 
 ```
-There are **`r Missing`** rows with missing values. I decided to fill the missing values with the median of that day, because the next section of this report is counting *"dates"* and not *"5-minutes intervals"* as a variable. 
+There are **`r Missing`** rows with missing values. I decided to fill the missing values with the median of that interval. 
 ```{r, cache=TRUE}
 Day_step_No_NA <-  
   Walking %>%     
@@ -79,5 +80,41 @@ Day_step_No_NA <-
 
 Day_step_No_NA
 ```
+
+```{r Plot3}
+Day_step_No_NA %>%
+  group_by(date) %>% 
+      summarise(Total = sum(steps)) %>%
+          ggplot(aes(x = Total)) + 
+              geom_histogram(color = 'black', binwidth = 2000) +
+              xlab('Mean number of steps')
+
+```
+```{r echo=FALSE, message=FALSE}
+day.mean2 <- mean(Day_step_No_NA$steps)
+day.median2 <- median(Day_step_No_NA$steps)
+day.mean <- mean(Day_step$steps, na.rm =TRUE)
+day.median <- median(Day_step$steps, na.rm =TRUE)
+```
+  * The new **mean** number of steps is: **`r day.mean2`**
+  * The new **median** number of steps is: **`r day.median2`**
+
+
 ## Are there differences in activity patterns between weekdays and weekends?
 
+```{r }
+Day_step_Week <-
+  Day_step_No_NA %>%
+    mutate(Weekday = ifelse(
+      (weekdays(as.Date(date)) == "Saturday")|(weekdays(as.Date(date)) == "Sunday"), 'Weekend', 'Weekday'))
+
+head(Day_step_Week, 3)
+```
+```{r message=FALSE}
+Day_step_Week %>%
+  group_by(interval, Weekday) %>%
+    summarize(Mean = mean(steps)) %>%
+        ggplot() +
+            geom_line(aes(x =interval, y = Mean, color = Weekday)) +
+            ylab('Mean number of steps') + xlab('Interval')
+```
